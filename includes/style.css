@@ -1,0 +1,67 @@
+body{
+	background-color: #000000;
+}
+canvas{
+	position: absolute;
+	top: 0px;
+	left:0px;
+	border: 1px solid black;
+	background-color: #ffffff;
+}
+#cpy{
+	position: fixed;
+	z-index: 1;
+	height: initial;
+	width: initial;
+}
+input{
+	width:50px;
+}
+ul{
+	position: fixed;
+	left: 0px;
+	top:20px;
+	list-style: none;
+	padding: 0px;
+	z-index: 2;
+	border: 1px solid Silver;
+}
+ul:after{
+	clear: both;
+}
+li:hover{
+	cursor: pointer;
+}
+li#title{
+	font-weight: bold;
+	border-bottom: 1px solid Silver;
+}
+li#title:hover{
+	cursor: move;
+}
+li{
+	padding: 10px;
+	font-size: 15px;
+	font-family: arial;
+	color: silver;
+	background-color: #343434;
+}
+section{
+	position: fixed;
+	width: 1000px;
+	height:50px;
+	bottom: 0px;
+	z-index: 3;
+}
+article{
+	display: none;
+	font-family: arial;
+	font-weight : bold;	
+	font-size: 18px;
+	color: #1d6b08;
+	text-align: center;
+	margin: auto;
+	width: 400px;
+	border: 1px solid #c1d045;
+	background-color: #e2ee79;
+}
