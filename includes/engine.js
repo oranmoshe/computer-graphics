@@ -6,28 +6,18 @@
 
 $(document).ready(function(){
 
-	var c = document.getElementById("myCanvas"),
-	ctx = c.getContext("2d"),
-	rect = c.getBoundingClientRect();
 	var flag = "";
-	var projectionType = "";
-
-	/**/
 	var CentreCanvasPoint = 600;         // center of canvas
 	var CanvasSizePoint = 1200;			// size of canvas
 	var canvas = document.getElementById("myCanvas");
 	var contex = canvas.getContext('2d');
-	var PageBackGround = "#369369";
-	contex.fillStyle = PageBackGround;
-	contex.fillRect(0, 0, CanvasSizePoint, CanvasSizePoint);
-	var ProjectionCheck = 0;
+	var ProjectionCheck = 'perspective';
 	var zoom = 0;
 	var rotationAngle=0;
 	var projectionAngle=45;
-	var ValOpacity = 1;
-	var PolygonFromJson = [];
-	var PolyTempJson = [];
-	var PolyZSortArr = [];
+	var shapeRepository = [];
+	var shapeBoard = [];
+	var orderingArray = [];
 
 	// Make toolbox draggable
 	$( "ul" ).draggable();
@@ -80,22 +70,22 @@ $(document).ready(function(){
 		//flag is the function the user picks
 		switch(flag){
 			case 'perspective':{
-				ProjectionCheck = 0;
+				ProjectionCheck = 'perspective';
 				Perspective3D();
 				break;	
 			}
 			case 'caval':{
-				ProjectionCheck = 1;
+				ProjectionCheck = 'caval';
 				Caval3D();
 				break;	
 			}
 			case 'cabin':{
-				ProjectionCheck = 2;
+				ProjectionCheck = 'cabin';
 				Cabin3D();
 				break;	
 			}
 			case 'parallel':{
-				ProjectionCheck = 3;
+				ProjectionCheck = 'parallel';
 				Parallel3D();	
 				break;	
 			}
@@ -149,14 +139,14 @@ function Get3DPic ()		//Get the objects from the JSON
 		{
 			for(var i=0; i<data.Polygon.length; i++)											
 			{	
-				PolygonFromJson[i] = [];
+				shapeRepository[i] = [];
 				for(var k=0; k<data.Polygon[i].length; k++)
 				{
-					PolygonFromJson[i][k]= data.Polygon[i][k];
+					shapeRepository[i][k]= data.Polygon[i][k];
 				}
 				for(j=0;j<5;j++)
 				{
-					PolygonFromJson[i][PolygonFromJson[i].length]=0;
+					shapeRepository[i][shapeRepository[i].length]=0;
 				}
 			}
 		}		    
@@ -172,23 +162,22 @@ function Draw3D()			//Drawing the objects on the screen
 	console.log("Draw");
 	VisibPoly();													//the function checks which polygon to be displayed
 	var i = 0;
-	while(i<PolyTempJson.length)								//going through all polygons
+	while(i<shapeBoard.length)								//going through all polygons
 	{
-		if(PolyTempJson[i][PolyTempJson[i].length-4] == 1)		//if visibilty=1 -> draw polygon to screen
+		if(shapeBoard[i][shapeBoard[i].length-4] == 1)		//if visibilty=1 -> draw polygon to screen
 		{
 			var k = 3;
 			contex.beginPath();   //first point of polygon
-			contex.moveTo(PolyTempJson[i][0]+CentreCanvasPoint, PolyTempJson[i][1]+CentreCanvasPoint);
-			while(k<PolyTempJson[i].length-7)
+			contex.moveTo(shapeBoard[i][0]+CentreCanvasPoint, shapeBoard[i][1]+CentreCanvasPoint);
+			while(k<shapeBoard[i].length-7)
 			{
-				contex.lineTo(PolyTempJson[i][k]+CentreCanvasPoint, PolyTempJson[i][k+1]+CentreCanvasPoint);  //connect polygon points 
+				contex.lineTo(shapeBoard[i][k]+CentreCanvasPoint, shapeBoard[i][k+1]+CentreCanvasPoint);  //connect polygon points 
 				k = k+3;
 			}									
 			contex.closePath();    //close the polygon path
 			contex.globalAlpha = 1;
 			contex.stroke();
-			contex.globalAlpha = ValOpacity;
-			contex.fillStyle = PolyTempJson[i][PolyTempJson[i].length-6];
+			contex.fillStyle = shapeBoard[i][shapeBoard[i].length-6];
 			contex.fill();		
 		}
 		i++;	
@@ -203,12 +192,12 @@ function Caval3D()			//cavalier projection function
 	contex.fillStyle = "#369369";
 	contex.globalAlpha = 1;
 	contex.fillRect(0, 0, CanvasSizePoint, CanvasSizePoint);
-	for(var i=0; i<PolygonFromJson.length; i++)					//copy from json array to temp array						
+	for(var i=0; i<shapeRepository.length; i++)					//copy from json array to temp array						
 	{	
-		PolyTempJson[i]=[];
-		for(var k=0; k<PolygonFromJson[i].length; k++)
+		shapeBoard[i]=[];
+		for(var k=0; k<shapeRepository[i].length; k++)
 		{
-			PolyTempJson[i][k] = PolygonFromJson[i][k];
+			shapeBoard[i][k] = shapeRepository[i][k];
 		}
 	}
 	var Angle = 0;
@@ -223,13 +212,13 @@ function Caval3D()			//cavalier projection function
 	var ProjAngleX = Math.cos(-Angle*Math.PI/180);
 	var ProjAngleY = Math.sin(-Angle*Math.PI/180);
 	var i=0;
-	while(i<PolyTempJson.length)
+	while(i<shapeBoard.length)
 	{
 		var k = 0;
-		while(k<PolyTempJson[i].length-7)		//~where the point should be set on screen
+		while(k<shapeBoard[i].length-7)		//~where the point should be set on screen
 		{
-			PolyTempJson[i][k] = (PolyTempJson[i][k])+(PolyTempJson[i][k+2]*ProjAngleX);
-			PolyTempJson[i][k+1] = (PolyTempJson[i][k+1])+(PolyTempJson[i][k+2]*ProjAngleY);
+			shapeBoard[i][k] = (shapeBoard[i][k])+(shapeBoard[i][k+2]*ProjAngleX);
+			shapeBoard[i][k+1] = (shapeBoard[i][k+1])+(shapeBoard[i][k+2]*ProjAngleY);
 			k = k+3;
 		}
 		i++;
@@ -245,12 +234,12 @@ function Cabin3D()		//cabinet projection function
 	contex.fillStyle = "#369369";
 	contex.globalAlpha = 1;
 	contex.fillRect(0, 0, CanvasSizePoint, CanvasSizePoint);
-	for(var i=0; i<PolygonFromJson.length; i++)					//copy from json array to temp array						
+	for(var i=0; i<shapeRepository.length; i++)					//copy from json array to temp array						
 	{	
-		PolyTempJson[i] = [];
-		for(var k=0; k<PolygonFromJson[i].length; k++)
+		shapeBoard[i] = [];
+		for(var k=0; k<shapeRepository[i].length; k++)
 		{
-			PolyTempJson[i][k] = PolygonFromJson[i][k];
+			shapeBoard[i][k] = shapeRepository[i][k];
 		}
 	}
 	var Angle;
@@ -265,13 +254,13 @@ function Cabin3D()		//cabinet projection function
 	var ProjAngleX = Math.cos(-Angle*Math.PI/180);
 	var ProjAngleY = Math.sin(-Angle*Math.PI/180);
 	var i = 0;
-	while(i<PolyTempJson.length)
+	while(i<shapeBoard.length)
 	{
 		var k = 0;
-		while(k<PolyTempJson[i].length-7)
+		while(k<shapeBoard[i].length-7)
 		{
-			PolyTempJson[i][k] = (PolyTempJson[i][k])+(PolyTempJson[i][k+2]/2*ProjAngleX);
-			PolyTempJson[i][k+1] = (PolyTempJson[i][k+1])+(PolyTempJson[i][k+2]/2*ProjAngleY);
+			shapeBoard[i][k] = (shapeBoard[i][k])+(shapeBoard[i][k+2]/2*ProjAngleX);
+			shapeBoard[i][k+1] = (shapeBoard[i][k+1])+(shapeBoard[i][k+2]/2*ProjAngleY);
 			k = k+3;
 		}
 		i++;
@@ -288,23 +277,23 @@ function Perspective3D()		//perspective projection function
 	contex.fillStyle = "#369369";
 	contex.fillRect(0, 0, CanvasSizePoint, CanvasSizePoint);
 
-	for(var i=0; i<PolygonFromJson.length; i++)			//copy from json array to temp array								
+	for(var i=0; i<shapeRepository.length; i++)			//copy from json array to temp array								
 	{	
-		PolyTempJson[i] = [];
-		for(var k=0; k<PolygonFromJson[i].length; k++)
+		shapeBoard[i] = [];
+		for(var k=0; k<shapeRepository[i].length; k++)
 		{
-			PolyTempJson[i][k] = PolygonFromJson[i][k];
+			shapeBoard[i][k] = shapeRepository[i][k];
 		}
 	}
 
 	var i = 0;
-	while(i<PolyTempJson.length)		//go through all polygons and calculate the coordinates
+	while(i<shapeBoard.length)		//go through all polygons and calculate the coordinates
 	{
 		var k = 0;
-		while(k<PolyTempJson[i].length-7)
+		while(k<shapeBoard[i].length-7)
 		{
-			PolyTempJson[i][k] = (PolyTempJson[i][k])/(1+PolyTempJson[i][k+2]/600);
-			PolyTempJson[i][k+1] = (PolyTempJson[i][k+1])/(1+PolyTempJson[i][k+2]/600);
+			shapeBoard[i][k] = (shapeBoard[i][k])/(1+shapeBoard[i][k+2]/600);
+			shapeBoard[i][k+1] = (shapeBoard[i][k+1])/(1+shapeBoard[i][k+2]/600);
 			k = k+3;
 		}
 		i++;
@@ -320,22 +309,22 @@ function Parallel3D()		//parallel projection
 	contex.fillStyle = "#369369";
 	contex.fillRect(0, 0, CanvasSizePoint, CanvasSizePoint);
 
-	for(var i=0; i<PolygonFromJson.length; i++)			//copy from json array to temp array									
+	for(var i=0; i<shapeRepository.length; i++)			//copy from json array to temp array									
 	{	
-		PolyTempJson[i] = [];
-		for(var k=0; k<PolygonFromJson[i].length; k++)
+		shapeBoard[i] = [];
+		for(var k=0; k<shapeRepository[i].length; k++)
 		{
-			PolyTempJson[i][k] = PolygonFromJson[i][k];
+			shapeBoard[i][k] = shapeRepository[i][k];
 		}
 	}
 	var i = 0;
-	while(i<PolyTempJson.length)		//calculation
+	while(i<shapeBoard.length)		//calculation
 	{
 		var k = 0;
-		while(k<PolyTempJson[i].length-7)
+		while(k<shapeBoard[i].length-7)
 		{
-			PolyTempJson[i][k] = PolyTempJson[i][k];
-			PolyTempJson[i][k+1] = PolyTempJson[i][k+1];
+			shapeBoard[i][k] = shapeBoard[i][k];
+			shapeBoard[i][k+1] = shapeBoard[i][k+1];
 			k=k+3;
 		}
 		i++;
@@ -349,14 +338,14 @@ function Parallel3D()		//parallel projection
 function PolyZMax()			//which maximale Z the polygon owns
 {			
 	console.log("PolyZMax");
-	for(var i=0; i<PolygonFromJson.length;i++)	
+	for(var i=0; i<shapeRepository.length;i++)	
 	{			          	
-		PolygonFromJson[i][PolygonFromJson[i].length-5] = -10000;	 // ZMax refreshing
-		for (var k=2; k<PolygonFromJson[i].length-6; k+=3)
+		shapeRepository[i][shapeRepository[i].length-5] = -10000;	 // ZMax refreshing
+		for (var k=2; k<shapeRepository[i].length-6; k+=3)
 		{
-	        if (PolygonFromJson[i][PolygonFromJson[i].length-5] < PolygonFromJson[i][k])
+	        if (shapeRepository[i][shapeRepository[i].length-5] < shapeRepository[i][k])
           	{
-          		PolygonFromJson[i][PolygonFromJson[i].length-5] = PolygonFromJson[i][k];
+          		shapeRepository[i][shapeRepository[i].length-5] = shapeRepository[i][k];
           	}
 	    }
 	}
@@ -365,18 +354,18 @@ function PolyZMax()			//which maximale Z the polygon owns
 function PolyNormal()		//calculate the normal from each polygon
 {			
 	console.log("PolyNormal");
-	for(var i=0; i<PolygonFromJson.length;i++)
+	for(var i=0; i<shapeRepository.length;i++)
 	{			         
 		var vector1 = [];
 		var vector2 = []; 	
 		for(k=0;k<3;k++)
 		{
-		    vector1[k] = PolygonFromJson[i][k+3]-PolygonFromJson[i][k];
-		    vector2[k] = PolygonFromJson[i][k+6]-PolygonFromJson[i][k+3];
+		    vector1[k] = shapeRepository[i][k+3]-shapeRepository[i][k];
+		    vector2[k] = shapeRepository[i][k+6]-shapeRepository[i][k+3];
 		}
-		PolygonFromJson[i][PolygonFromJson[i].length-3] = vector1[1]*vector2[2]-vector1[2]*vector2[1];
-		PolygonFromJson[i][PolygonFromJson[i].length-2] = vector1[2]*vector2[0]-vector1[0]*vector2[2];
-		PolygonFromJson[i][PolygonFromJson[i].length-1] = vector1[0]*vector2[1]-vector1[1]*vector2[0];
+		shapeRepository[i][shapeRepository[i].length-3] = vector1[1]*vector2[2]-vector1[2]*vector2[1];
+		shapeRepository[i][shapeRepository[i].length-2] = vector1[2]*vector2[0]-vector1[0]*vector2[2];
+		shapeRepository[i][shapeRepository[i].length-1] = vector1[0]*vector2[1]-vector1[1]*vector2[0];
 	}
 }
 
@@ -407,13 +396,13 @@ function VisibPoly()		//visiability of polygons
 	var xtovec = 0;
 	var ytovec = 0;
 	var ztovec = 0;
-	if (ProjectionCheck == 1)    // cavalier projection
+	if (ProjectionCheck == 'caval')    // cavalier projection
 	{
 		xtovec = 0+(5000*ProjAngleX);
 		ytovec = 0+(5000*ProjAngleY);
 		ztovec = 5000;
 	}
-	else if(ProjectionCheck == 2)		// cabinet projection
+	else if(ProjectionCheck == 'cabin')		// cabinet projection
 	{
 		xtovec = 0+(5000/2*ProjAngleX);
 		ytovec = 0+(5000/2*ProjAngleY);
@@ -426,30 +415,23 @@ function VisibPoly()		//visiability of polygons
 		ztovec = 800;
 	}
 
-	for(var i=0; i<PolyTempJson.length;i++)				//check the angle between C.O.P & Polygon Normal
+	for(var i=0; i<shapeBoard.length;i++)				//check the angle between C.O.P & Polygon Normal
 	{			      
-		NormX = PolyTempJson[i][PolyTempJson[i].length-3];
-		NormY = PolyTempJson[i][PolyTempJson[i].length-2];
-		NormZ = PolyTempJson[i][PolyTempJson[i].length-1];
-		VectX = PolyTempJson[i][0]-(xtovec);
-		VectY = PolyTempJson[i][1]-(ytovec);
-		VectZ = PolyTempJson[i][2]-(-ztovec);
+		NormX = shapeBoard[i][shapeBoard[i].length-3];
+		NormY = shapeBoard[i][shapeBoard[i].length-2];
+		NormZ = shapeBoard[i][shapeBoard[i].length-1];
+		VectX = shapeBoard[i][0]-(xtovec);
+		VectY = shapeBoard[i][1]-(ytovec);
+		VectZ = shapeBoard[i][2]-(-ztovec);
 
 		VisPol = Math.acos((VectX*NormX+VectY*NormY+VectZ*NormZ)/(Math.sqrt(Math.pow(VectX,2)+Math.pow(VectY,2)+Math.pow(VectZ,2))*Math.sqrt(Math.pow(NormX,2)+Math.pow(NormY,2)+Math.pow(NormZ,2)))); // calc angle between normal and C.O.P
 		AngleNormUser = VisPol*(180/Math.PI); // from rad to deg
 			  
-		// if(ValOpacity!==undefined && ValOpacity<1 && ValOpacity>=0)			//works with opacity
-		// {
-	 //   		PolyTempJson[i][PolyTempJson[i].length-4]=1;
-	 //    }
-		// else
-	 //    {
-			if(Math.cos(AngleNormUser*(Math.PI/180))<0)  
-			{
-				PolyTempJson[i][PolyTempJson[i].length-4] = 1;
-			}
-			else{PolyTempJson[i][PolyTempJson[i].length-4] = 0;}
-	    // }
+		if(Math.cos(AngleNormUser*(Math.PI/180))<0)  
+		{
+			shapeBoard[i][shapeBoard[i].length-4] = 1;
+		}
+		else{shapeBoard[i][shapeBoard[i].length-4] = 0;}
 
 	}
 }
@@ -469,31 +451,31 @@ function Rotation3DX()		//rotation function on X
 	}
 	var Yrot = 0;
 	var Zrot = 0;
-	for(var i=0; i<PolygonFromJson.length;i++)
+	for(var i=0; i<shapeRepository.length;i++)
 	{			         
-		for(var k=0;k<PolygonFromJson[i].length-7;k+=3)
+		for(var k=0;k<shapeRepository[i].length-7;k+=3)
 	    {
-	        Yrot = PolygonFromJson[i][k+1];
-	        Zrot = PolygonFromJson[i][k+2];
-	        PolygonFromJson[i][k+1] = Yrot*Math.cos(AngleRotXUser*Math.PI/180)+Zrot*(-1*Math.sin(AngleRotXUser*Math.PI/180));
-			PolygonFromJson[i][k+2] = Yrot*Math.sin(AngleRotXUser*Math.PI/180)+Zrot*Math.cos(AngleRotXUser*Math.PI/180);
+	        Yrot = shapeRepository[i][k+1];
+	        Zrot = shapeRepository[i][k+2];
+	        shapeRepository[i][k+1] = Yrot*Math.cos(AngleRotXUser*Math.PI/180)+Zrot*(-1*Math.sin(AngleRotXUser*Math.PI/180));
+			shapeRepository[i][k+2] = Yrot*Math.sin(AngleRotXUser*Math.PI/180)+Zrot*Math.cos(AngleRotXUser*Math.PI/180);
 	    }
-		Yrot = PolygonFromJson[i][PolygonFromJson[i].length-2];
-		Zrot = PolygonFromJson[i][PolygonFromJson[i].length-1];
-		PolygonFromJson[i][PolygonFromJson[i].length-2] = Yrot*Math.cos(AngleRotXUser*Math.PI/180)+Zrot*(-1*Math.sin(AngleRotXUser*Math.PI/180)); // Y normal rotation
-		PolygonFromJson[i][PolygonFromJson[i].length-1] = Yrot*Math.sin(AngleRotXUser*Math.PI/180)+Zrot*Math.cos(AngleRotXUser*Math.PI/180);	// Z normal rotation	          		
+		Yrot = shapeRepository[i][shapeRepository[i].length-2];
+		Zrot = shapeRepository[i][shapeRepository[i].length-1];
+		shapeRepository[i][shapeRepository[i].length-2] = Yrot*Math.cos(AngleRotXUser*Math.PI/180)+Zrot*(-1*Math.sin(AngleRotXUser*Math.PI/180)); // Y normal rotation
+		shapeRepository[i][shapeRepository[i].length-1] = Yrot*Math.sin(AngleRotXUser*Math.PI/180)+Zrot*Math.cos(AngleRotXUser*Math.PI/180);	// Z normal rotation	          		
 	}
 
 	PolyZMax();
-	if (ProjectionCheck == 1)
+	if (ProjectionCheck == 'caval')
 	{
 		Caval3D();
 	}
-	else if(ProjectionCheck == 2)
+	else if(ProjectionCheck == 'cabin')
 	{
 		Cabin3D();
 	}
-	else if(ProjectionCheck == 3)
+	else if(ProjectionCheck == 'parallel')
 	{
 		Parallel3D();
 	}
@@ -518,30 +500,30 @@ function Rotation3DY()				//rotation on Y
 	}
 	var Xrot = 0;
 	var Zrot = 0;
-	for(var i=0; i<PolygonFromJson.length;i++)
+	for(var i=0; i<shapeRepository.length;i++)
 	{			         
-		for(var k=0;k<PolygonFromJson[i].length-7;k+=3)
+		for(var k=0;k<shapeRepository[i].length-7;k+=3)
 		{
-	    	Xrot = PolygonFromJson[i][k];
-	    	Zrot = PolygonFromJson[i][k+2];
-	    	PolygonFromJson[i][k] = Xrot*Math.cos(AngleRotXUser*Math.PI/180)+Zrot*(-1*Math.sin(AngleRotXUser*Math.PI/180));
-			PolygonFromJson[i][k+2] = Xrot*Math.sin(AngleRotXUser*Math.PI/180)+Zrot*Math.cos(AngleRotXUser*Math.PI/180);
+	    	Xrot = shapeRepository[i][k];
+	    	Zrot = shapeRepository[i][k+2];
+	    	shapeRepository[i][k] = Xrot*Math.cos(AngleRotXUser*Math.PI/180)+Zrot*(-1*Math.sin(AngleRotXUser*Math.PI/180));
+			shapeRepository[i][k+2] = Xrot*Math.sin(AngleRotXUser*Math.PI/180)+Zrot*Math.cos(AngleRotXUser*Math.PI/180);
 	    }
-		Xrot = PolygonFromJson[i][PolygonFromJson[i].length-3];
-		Zrot = PolygonFromJson[i][PolygonFromJson[i].length-1];
-		PolygonFromJson[i][PolygonFromJson[i].length-3] = Xrot*Math.cos(AngleRotXUser*Math.PI/180)+Zrot*(-1*Math.sin(AngleRotXUser*Math.PI/180)); // X normal rotation
-		PolygonFromJson[i][PolygonFromJson[i].length-1] = Xrot*Math.sin(AngleRotXUser*Math.PI/180)+Zrot*Math.cos(AngleRotXUser*Math.PI/180);	// Z normal rotation		          		
+		Xrot = shapeRepository[i][shapeRepository[i].length-3];
+		Zrot = shapeRepository[i][shapeRepository[i].length-1];
+		shapeRepository[i][shapeRepository[i].length-3] = Xrot*Math.cos(AngleRotXUser*Math.PI/180)+Zrot*(-1*Math.sin(AngleRotXUser*Math.PI/180)); // X normal rotation
+		shapeRepository[i][shapeRepository[i].length-1] = Xrot*Math.sin(AngleRotXUser*Math.PI/180)+Zrot*Math.cos(AngleRotXUser*Math.PI/180);	// Z normal rotation		          		
 	}
 	PolyZMax();
-	if (ProjectionCheck == 1)
+	if (ProjectionCheck == 'caval')
 	{
 		Caval3D();
 	}
-	else if(ProjectionCheck == 2)
+	else if(ProjectionCheck == 'cabin')
 	{
 		Cabin3D();
 	}
-	else if(ProjectionCheck == 3)
+	else if(ProjectionCheck == 'parallel')
 	{
 		Parallel3D();
 	}
@@ -566,32 +548,32 @@ function Rotation3DZ()			//rotation on Z
 	}
 	var Xrot = 0;
 	var Yrot = 0;
-	for(var i=0; i<PolygonFromJson.length;i++)
+	for(var i=0; i<shapeRepository.length;i++)
 	{			         
-		for(var k=0;k<PolygonFromJson[i].length-7;k+=3)
+		for(var k=0;k<shapeRepository[i].length-7;k+=3)
 		{
-	    	Xrot = PolygonFromJson[i][k];
-	    	Yrot = PolygonFromJson[i][k+1];
-	    	PolygonFromJson[i][k] = Xrot*Math.cos(AngleRotXUser*Math.PI/180)+Yrot*Math.sin(AngleRotXUser*Math.PI/180);
-			PolygonFromJson[i][k+1] = Xrot*(-1*Math.sin(AngleRotXUser*Math.PI/180))+Yrot*Math.cos(AngleRotXUser*Math.PI/180);
+	    	Xrot = shapeRepository[i][k];
+	    	Yrot = shapeRepository[i][k+1];
+	    	shapeRepository[i][k] = Xrot*Math.cos(AngleRotXUser*Math.PI/180)+Yrot*Math.sin(AngleRotXUser*Math.PI/180);
+			shapeRepository[i][k+1] = Xrot*(-1*Math.sin(AngleRotXUser*Math.PI/180))+Yrot*Math.cos(AngleRotXUser*Math.PI/180);
 	    }
-		Xrot = PolygonFromJson[i][PolygonFromJson[i].length-3];
-		Yrot = PolygonFromJson[i][PolygonFromJson[i].length-2];
-		PolygonFromJson[i][PolygonFromJson[i].length-3] = Xrot*Math.cos(AngleRotXUser*Math.PI/180)+Yrot*Math.sin(AngleRotXUser*Math.PI/180); // Y normal rotation
-		PolygonFromJson[i][PolygonFromJson[i].length-2] = Xrot*(-1*Math.sin(AngleRotXUser*Math.PI/180))+Yrot*Math.cos(AngleRotXUser*Math.PI/180);	// Z normal rotation			          		
+		Xrot = shapeRepository[i][shapeRepository[i].length-3];
+		Yrot = shapeRepository[i][shapeRepository[i].length-2];
+		shapeRepository[i][shapeRepository[i].length-3] = Xrot*Math.cos(AngleRotXUser*Math.PI/180)+Yrot*Math.sin(AngleRotXUser*Math.PI/180); // Y normal rotation
+		shapeRepository[i][shapeRepository[i].length-2] = Xrot*(-1*Math.sin(AngleRotXUser*Math.PI/180))+Yrot*Math.cos(AngleRotXUser*Math.PI/180);	// Z normal rotation			          		
 	}
 
 	PolyZMax();
 
-	if (ProjectionCheck == 1)
+	if (ProjectionCheck == 'caval')
 	{
 		Caval3D();
 	}
-	else if(ProjectionCheck == 2)
+	else if(ProjectionCheck == 'cabin')
 	{
 		Cabin3D();
 	}
-	else if(ProjectionCheck == 3)
+	else if(ProjectionCheck == 'parallel')
 	{
 		Parallel3D();
 	}
@@ -604,42 +586,42 @@ function Rotation3DZ()			//rotation on Z
 function SortPolyZ()				//sorting polygons by their maximale Z
 {
 	console.log("SortPolyZ");
-	for (var i=0;i<PolyTempJson.length-1;i++)
+	for (var i=0;i<shapeBoard.length-1;i++)
 	{
-		for (var j=0;j<PolyTempJson.length-i-1;j++)
+		for (var j=0;j<shapeBoard.length-i-1;j++)
 		{
-			if(PolyTempJson[j][PolyTempJson[j].length-5] < PolyTempJson[j+1][PolyTempJson[j].length-5])
+			if(shapeBoard[j][shapeBoard[j].length-5] < shapeBoard[j+1][shapeBoard[j].length-5])
 			{
-				if (PolyTempJson[j].length == PolyTempJson[j+1].length)     //if the arrays lengths are equal
+				if (shapeBoard[j].length == shapeBoard[j+1].length)     //if the arrays lengths are equal
 				{
-					for(var k=0;k<PolyTempJson[j].length;k++)
+					for(var k=0;k<shapeBoard[j].length;k++)
 					{
-						PolyZSortArr[k] = PolyTempJson[j][k];
-						PolyTempJson[j][k] = PolyTempJson[j+1][k];
-						PolyTempJson[j+1][k] = PolyZSortArr[k];
+						orderingArray[k] = shapeBoard[j][k];
+						shapeBoard[j][k] = shapeBoard[j+1][k];
+						shapeBoard[j+1][k] = orderingArray[k];
 					}
 				}
 				else
 				{
 					var temp1 = [];
 					var temp2 = [];					
-					for(var s=0;s<PolyTempJson[j].length;s++)
+					for(var s=0;s<shapeBoard[j].length;s++)
 					{
-						temp1[s] = PolyTempJson[j][s];
+						temp1[s] = shapeBoard[j][s];
 					}
-					for(var s=0;s<PolyTempJson[j+1].length;s++)
+					for(var s=0;s<shapeBoard[j+1].length;s++)
 					{
-						temp2[s] = PolyTempJson[j+1][s];
+						temp2[s] = shapeBoard[j+1][s];
 					}
-					PolyTempJson[j] = [];
-					PolyTempJson[j+1] = [];
+					shapeBoard[j] = [];
+					shapeBoard[j+1] = [];
 					for(var s=0;s<temp2.length;s++)
 					{
-						PolyTempJson[j][s] = temp2[s];
+						shapeBoard[j][s] = temp2[s];
 					}
 					for(var s=0;s<temp1.length;s++)
 					{
-						PolyTempJson[j+1][s] = temp1[s];
+						shapeBoard[j+1][s] = temp1[s];
 					}
 				}
 			}
@@ -651,26 +633,26 @@ function SortPolyZ()				//sorting polygons by their maximale Z
 function Resize3D()					//resizing function
 {	
 	console.log("Resize3D");
-	for(var i=0; i<PolygonFromJson.length;i++)
+	for(var i=0; i<shapeRepository.length;i++)
 	{			         
-	   	for(var k=0;k<PolygonFromJson[i].length-7;k+=3)
+	   	for(var k=0;k<shapeRepository[i].length-7;k+=3)
 		{
-			PolygonFromJson[i][k] = PolygonFromJson[i][k]*zoom;
-			PolygonFromJson[i][k+1] = PolygonFromJson[i][k+1]*zoom;
-			PolygonFromJson[i][k+2] = PolygonFromJson[i][k+2]*zoom;
+			shapeRepository[i][k] = shapeRepository[i][k]*zoom;
+			shapeRepository[i][k+1] = shapeRepository[i][k+1]*zoom;
+			shapeRepository[i][k+2] = shapeRepository[i][k+2]*zoom;
 		}
 	}
 	PolyNormal();
 	PolyZMax();
-	if (ProjectionCheck == 1)
+	if (ProjectionCheck == 'caval')
 	{
 		Caval3D();
 	}
-	else if(ProjectionCheck == 2)
+	else if(ProjectionCheck == 'cabin')
 	{
 		Cabin3D();
 	}
-	else if(ProjectionCheck == 3)
+	else if(ProjectionCheck == 'parallel')
 	{
 		Parallel3D();
 	}
@@ -685,27 +667,27 @@ function Resize3D()					//resizing function
 function Move3D()				//moving objects on the grid
 {
 	console.log("Move3D");
-	for(var i=0; i<PolygonFromJson.length;i++)
+	for(var i=0; i<shapeRepository.length;i++)
 	{			     
-		for(var k=0;k<PolygonFromJson[i].length-7;k+=3)
+		for(var k=0;k<shapeRepository[i].length-7;k+=3)
 		{
-			PolygonFromJson[i][k] = PolygonFromJson[i][k]+parseFloat(0);
-			PolygonFromJson[i][k+1] = PolygonFromJson[i][k+1]+parseFloat(0);
-			PolygonFromJson[i][k+2] = PolygonFromJson[i][k+2]+parseFloat(0);
+			shapeRepository[i][k] = shapeRepository[i][k]+parseFloat(0);
+			shapeRepository[i][k+1] = shapeRepository[i][k+1]+parseFloat(0);
+			shapeRepository[i][k+2] = shapeRepository[i][k+2]+parseFloat(0);
 		}
 	}	
 
 	PolyNormal();
 
-	if (ProjectionCheck == 1)
+	if (ProjectionCheck == 'caval')
 	{
 		Caval3D();
 	}
-	else if(ProjectionCheck == 2)
+	else if(ProjectionCheck == 'cabin')
 	{
 		Cabin3D();
 	}
-	else if(ProjectionCheck == 3)
+	else if(ProjectionCheck == 'parallel')
 	{
 		Parallel3D();
 	}
