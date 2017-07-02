@@ -30,6 +30,9 @@ $(document).ready(function(){
 		counter=0;
 		if($(this).attr('id')!='title' && $(this).attr('id')!='color'){
 			flag = $(this).attr('id');
+			if(flag=='reload'){
+				window.location.reload();
+			}	
 			var type = $(this).attr('data-type');						
 			$('li').css('font-weight','normal').css('color','silver');
 			$(this).css('font-weight','bold').css('color','#ffffff');	
@@ -114,10 +117,6 @@ $(document).ready(function(){
 				scale()	
 				break;	
 			}
-			case 'reload':{
-				window.location.reload();
-				break;	
-			}	
 		}
 		e.preventDefault();
 	});
@@ -142,7 +141,6 @@ $(document).ready(function(){
 				}
 			}	    		
 	 		normalization();
-	 		setPolygonZMax();
 	 		perspective();	
 		});
 	}
@@ -393,7 +391,6 @@ $(document).ready(function(){
 	}
 
 	function prepareToProjection(){
-		setPolygonZMax();
 		if (projectionType == 'caval')
 		{
 			caval();
@@ -497,7 +494,6 @@ $(document).ready(function(){
 				shapeRepository[i][k+2] = shapeRepository[i][k+2]*zoom;
 			}
 		}
-		normalization();
 		prepareToProjection();
 	}	
 
