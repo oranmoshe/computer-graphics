@@ -186,52 +186,26 @@ $(document).ready(function(){
 
 	function Caval3D()			//cavalier projection function
 	{		
-		console.log("Caval3D");
-		clear();
-		for(var i=0; i<shapeRepository.length; i++)					//copy from json array to temp array						
-		cloneRepository();
-		var ProjAngleX = Math.cos(-projectionAngle*Math.PI/180);
-		var ProjAngleY = Math.sin(-projectionAngle*Math.PI/180);
-		var i=0;
-		while(i<shapeBoard.length)
-		{
-			var k = 0;
-			while(k<shapeBoard[i].length-7)		//~where the point should be set on screen
-			{
-				shapeBoard[i][k] = (shapeBoard[i][k])+(shapeBoard[i][k+2]*ProjAngleX);
-				shapeBoard[i][k+1] = (shapeBoard[i][k+1])+(shapeBoard[i][k+2]*ProjAngleY);
-				k = k+3;
-			}
-			i++;
-		}
-		setPolygonZMax();			//which maximale Z the polygon owns
-		SortPolyZ();		//Sort polygons through their maximale Z
-		draw();			//Draw on screen
+		projection('caval')
 	}
 
 	function Cabin3D()		//cabinet projection function
 	{		
-		console.log("Caval3D");
+		projection('cabin')						
+	}
+
+	function projection(type){
 		clear();
 		cloneRepository();
-		var ProjAngleX = Math.cos(-projectionAngle*Math.PI/180);
-		var ProjAngleY = Math.sin(-projectionAngle*Math.PI/180);
-		var i = 0;
-		while(i<shapeBoard.length)
-		{
-			var k = 0;
-			while(k<shapeBoard[i].length-7)
-			{
-				shapeBoard[i][k] = (shapeBoard[i][k])+(shapeBoard[i][k+2]/2*ProjAngleX);
-				shapeBoard[i][k+1] = (shapeBoard[i][k+1])+(shapeBoard[i][k+2]/2*ProjAngleY);
-				k = k+3;
+		for (var i = 0; i < shapeBoard.length; i++) {
+			for (var k = 0; k<shapeBoard[i].length-7; k = k+3) {
+				shapeBoard[i][k] = (shapeBoard[i][k])+(shapeBoard[i][k+2]/(type=='cabin'?2:1)*getCos(projectionAngle));
+				shapeBoard[i][k+1] = (shapeBoard[i][k+1])+(shapeBoard[i][k+2]/2*getSin(projectionAngle));
 			}
-			i++;
 		}
 		setPolygonZMax();			//which maximale Z the polygon owns
 		SortPolyZ();		//Sort polygons through their maximale Z
 		draw();			//Draw on screen
-							
 	}
 
 	function perspective()		//perspective projection function
@@ -239,17 +213,12 @@ $(document).ready(function(){
 		console.log("perspective");
 		clear();
 		cloneRepository();
-		var i = 0;
-		while(i<shapeBoard.length)		//go through all polygons and calculate the coordinates
-		{
-			var k = 0;
-			while(k<shapeBoard[i].length-7)
-			{
+		for (var i = 0; i < shapeBoard.length; i++) {		//go through all polygons and calculate the coordinates
+			for (var k = 0; k<shapeBoard[i].length-7; k = k+3) {
 				shapeBoard[i][k] = (shapeBoard[i][k])/(1+shapeBoard[i][k+2]/600);
-				shapeBoard[i][k+1] = (shapeBoard[i][k+1])/(1+shapeBoard[i][k+2]/600);
-				k = k+3;
+				shapeBoard[i][k+1] = (shapeBoard[i][k+1])/(1+shapeBoard[i][k+2]/600);	
 			}
-			i++;
+		
 		}
 		setPolygonZMax();					//which maximale Z the polygon owns
 		SortPolyZ();				//Sort polygons through their maximale Z
@@ -261,17 +230,11 @@ $(document).ready(function(){
 		console.log("Parallel3D");
 		clear();
 		cloneRepository();
-		var i = 0;
-		while(i<shapeBoard.length)		//calculation
-		{
-			var k = 0;
-			while(k<shapeBoard[i].length-7)
-			{
+		for (var i = 0; i < shapeBoard.length; i++) {		//go through all polygons and calculate the coordinates
+			for (var k = 0; k<shapeBoard[i].length-7; k = k+3) {
 				shapeBoard[i][k] = shapeBoard[i][k];
 				shapeBoard[i][k+1] = shapeBoard[i][k+1];
-				k=k+3;
 			}
-			i++;
 		}
 		setPolygonZMax();
 		SortPolyZ();
@@ -288,8 +251,12 @@ $(document).ready(function(){
 			}
 		}
 	}
-
-
+	function getCos(angle){
+		return Math.cos(-angle*Math.PI/180);
+	}
+	function getSin(angle){
+		return  Math.sin(-angle*Math.PI/180);
+	}
 	function setPolygonZMax()			//which maximale Z the polygon owns
 	{			
 		console.log("setPolygonZMax");
