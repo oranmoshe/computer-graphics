@@ -10,7 +10,7 @@ $(document).ready(function(){
 	var centerPoint = {
 		x: 750,
 		y: 400	
-	};         // center of canvas
+	}; 
 	var ctxSize = 1200;			// size of canvas
 	var canvas = document.getElementById("myCanvas");
 	var ctx = canvas.getContext('2d');
@@ -37,16 +37,22 @@ $(document).ready(function(){
 			$('li').css('font-weight','normal').css('color','silver');
 			$(this).css('font-weight','bold').css('color','#ffffff');	
 			$('#title').css('font-weight','bold');	
+			var invalidMessage = "invalid input! , "
+			var regularMessage = "insert angle please:"
+			var message = regularMessage;
 			switch(type){
 				case 'type':{
 					$('article').text("Please click at the screen");
 					inputValue = null;
 					while(!inputValue){
-						var val = prompt('value:');
+						var val = prompt(message);
 						if(Math.abs(val)<=360){	
 							inputValue = val						
-							projectionAngle = val;							
+							projectionAngle = val;								
 						}
+						else
+							message = invalidMessage + regularMessage;
+						
 					} 
 
 					break;
@@ -55,11 +61,13 @@ $(document).ready(function(){
 					$('article').text("Please click at the screen");
 					inputValue = null;
 					while(!inputValue){
-						var val = prompt('value:');
+						var val = prompt(regularMessage);
 						if(Math.abs(val)<=360){
 							inputValue = val
 							rotationAngle = val;
 						}
+						else
+							message = invalidMessage + regularMessage;
 					} 
 					break;
 				}
@@ -127,9 +135,10 @@ $(document).ready(function(){
 	}
 
 	load ()
-	function load ()		//Get the objects from the JSON
+
+	//reads the text file and initializes the array that holds the shapes info
+	function load ()
 	{ 
-		// initialization - read data from txt file and puts it in an array
 		readTextFile('includes/data.txt',function(data_){					 
 		    var lines = data_.split('\n');
 			for(var i=0; i<lines.length; i++)											
@@ -146,7 +155,7 @@ $(document).ready(function(){
 	}
 
 
-	//reads txt file
+	//creating an http request to read txt file
 	function readTextFile(file,callback)
 	{
 
@@ -171,23 +180,28 @@ $(document).ready(function(){
 		  }
 	}
 
-	function draw()			//Drawing the objects on the screen
+	//Drawing the shepes on the screen
+	function draw()			
 	{									
-		visible();													//the function checks which polygon to be displayed
+		visible();	
+
+		//going over all of the shapes												
 		var i = 0;
-		while(i<shapeBoard.length)								//going through all polygons
+		while(i<shapeBoard.length)								
 		{
-			if(shapeBoard[i][shapeBoard[i].length-4] == 1)		//if visibilty=1 -> draw polygon to screen
+			//if visibilty == 1 thw shape will be drawn on the screen
+			if(shapeBoard[i][shapeBoard[i].length-4] == 1)		
 			{
+				//drawing the shape
 				var k = 3;
-				ctx.beginPath();   //first point of polygon
+				ctx.beginPath(); 
 				ctx.moveTo(parseFloat(shapeBoard[i][0])+parseFloat(centerPoint.x), parseFloat(shapeBoard[i][1])+parseFloat(centerPoint.y));
 				while(k<shapeBoard[i].length-7)
 				{
 					ctx.lineTo(parseFloat(shapeBoard[i][k])+parseFloat(centerPoint.x), parseFloat(shapeBoard[i][k+1])+parseFloat(centerPoint.y));  //connect polygon points 
 					k = k+3;
 				}									
-				ctx.closePath();    //close the polygon path
+				ctx.closePath();   
 				ctx.globalAlpha = 1;
 				ctx.stroke();
 				ctx.fillStyle = shapeBoard[i][shapeBoard[i].length-6];
@@ -198,16 +212,19 @@ $(document).ready(function(){
 							
 	}
 
-	function caval()			//cavalier projection function
+	// call to cavalier projection
+	function caval()			
 	{		
 		projection('caval')
 	}
 
-	function cabin()		//cabinet projection function
+	// call to cabinet projection 
+	function cabin()	
 	{		
 		projection('cabin')						
 	}
 
+	//activates the projection according to the type sent to it
 	function projection(type){
 		prepareToDraw(function(){
 			for (var i = 0; i < shapeBoard.length; i++) {
@@ -219,10 +236,12 @@ $(document).ready(function(){
 		});
 	}
 
-	function perspective()		//perspective projection function
+	//perspective projection
+	function perspective()		
 	{			
 		prepareToDraw(function(){	
-			for (var i = 0; i < shapeBoard.length; i++) {		//go through all polygons and calculate the coordinates
+			//calculating each shape coordinates	
+			for (var i = 0; i < shapeBoard.length; i++) {		
 				for (var k = 0; k<shapeBoard[i].length-7; k = k+3) {
 					shapeBoard[i][k] = (shapeBoard[i][k])/(1+shapeBoard[i][k+2]/600);
 					shapeBoard[i][k+1] = (shapeBoard[i][k+1])/(1+shapeBoard[i][k+2]/600);	
@@ -232,12 +251,14 @@ $(document).ready(function(){
 		});
 	}
 
-	function parallel()		//parallel projection
+	//parallel projection
+	function parallel()		
 	{		
 		prepareToDraw(function(){		
 		});
 	}
 
+	//prepearing the canvas to draw the shapes according to their new values
 	function prepareToDraw(callback){
 		clear();
 		cloneRepository();
@@ -247,9 +268,10 @@ $(document).ready(function(){
 		draw();
 	}
 
+	//creating temporary array for claculating purposes with the same shapes info
 	function cloneRepository(){
 		shapeBoard = [];
-		for(var i=0; i<shapeRepository.length; i++)			//copy from json array to temp array									
+		for(var i=0; i<shapeRepository.length; i++)											
 		{	
 			shapeBoard[i] = [];
 			for(var k=0; k<shapeRepository[i].length; k++)
@@ -258,13 +280,19 @@ $(document).ready(function(){
 			}
 		}
 	}
+
+	//gets cosinos valur of a given angle
 	function getCos(angle){
 		return Math.cos(-angle*Math.PI/180);
 	}
+
+	//gets sinus value of a given angle
 	function getSin(angle){
 		return  Math.sin(-angle*Math.PI/180);
 	}
-	function setPolygonZMax()			//which maximale Z the polygon owns
+
+	//determines the maximum z value of the shapes
+	function setPolygonZMax()
 	{			
 		for(var i=0; i<shapeRepository.length;i++)	
 		{			          	
@@ -279,7 +307,8 @@ $(document).ready(function(){
 		}
 	}
 
-	function normalization()		//calculate the normal from each polygon
+	//normalizing the shapes
+	function normalization()	
 	{			
 		for(var i=0; i<shapeRepository.length;i++)
 		{			         
@@ -296,10 +325,11 @@ $(document).ready(function(){
 		}
 	}
 
-	function visible()		//visiability of polygons
+	//checks which shape will be displayed
+	function visible()		
 	{		
 		var vector = getVisibleVector();
-		for(var i=0; i<shapeBoard.length;i++)				//check the angle between C.O.P & Polygon Normal
+		for(var i=0; i<shapeBoard.length;i++)			
 		{		
 			var normal = {
 				x:shapeBoard[i][shapeBoard[i].length-3],
@@ -311,6 +341,7 @@ $(document).ready(function(){
 				y:parseFloat(shapeBoard[i][1])-parseFloat((vector.y)),
 				z:parseFloat(shapeBoard[i][2])-parseFloat((-vector.z))
 			}
+			//calculating the angle
 			var arcos = Math.acos((newVector.x*normal.x+newVector.y*normal.y+newVector.z*normal.z)/(Math.sqrt(Math.pow(newVector.x,2)+Math.pow(newVector.y,2)+Math.pow(newVector.z,2))*Math.sqrt(Math.pow(normal.x,2)+Math.pow(normal.y,2)+Math.pow(normal.z,2)))); // calc angle between normal and C.O.P
 			var deg = arcos*(180/Math.PI); // from rad to deg  
 			if(Math.cos(deg*(Math.PI/180))<0)  
@@ -320,7 +351,8 @@ $(document).ready(function(){
 		}
 	}
 
-	function rotateX()		//rotation function on X
+	//rotation on X axis 
+	function rotateX()		
 	{			
 		var rotation = {
 			y:0,
@@ -337,13 +369,18 @@ $(document).ready(function(){
 		    }
 			rotation.y = shapeRepository[i][shapeRepository[i].length-2];
 			rotation.z = shapeRepository[i][shapeRepository[i].length-1];
+			
+			// Y normal rotation
 			shapeRepository[i][shapeRepository[i].length-2] = rotation.y*Math.cos(rotationAngle*Math.PI/180)+rotation.z*(-1*Math.sin(rotationAngle*Math.PI/180)); // Y normal rotation
+			
+			// Z normal rotation
 			shapeRepository[i][shapeRepository[i].length-1] = rotation.y*Math.sin(rotationAngle*Math.PI/180)+rotation.z*Math.cos(rotationAngle*Math.PI/180);	// Z normal rotation	          		
 		}
 		prepareToProjection();							
 	}
 
-	function rotateY()				//rotation on Y
+	//rotation on Y axis
+	function rotateY()			
 	{
 		var rotation = {
 			x:0,
@@ -360,13 +397,18 @@ $(document).ready(function(){
 		    }
 			rotation.x = shapeRepository[i][shapeRepository[i].length-3];
 			rotation.z = shapeRepository[i][shapeRepository[i].length-1];
+			
+			// X normal rotation
 			shapeRepository[i][shapeRepository[i].length-3] = rotation.x*Math.cos(rotationAngle*Math.PI/180)+rotation.z*(-1*Math.sin(rotationAngle*Math.PI/180)); // X normal rotation
+			
+			// Z normal rotation
 			shapeRepository[i][shapeRepository[i].length-1] = rotation.x*Math.sin(rotationAngle*Math.PI/180)+rotation.z*Math.cos(rotationAngle*Math.PI/180);	// Z normal rotation		          		
 		}
 		prepareToProjection();
 	}
 
-	function rotateZ()			//rotation on Z
+	//rotation on Z axis
+	function rotateZ()			
 	{	
 		var rotation = {
 			x:0,
@@ -383,13 +425,18 @@ $(document).ready(function(){
 		    }
 			rotation.x = shapeRepository[i][shapeRepository[i].length-3];
 			rotation.y = shapeRepository[i][shapeRepository[i].length-2];
+			
+			// Y normal rotation
 			shapeRepository[i][shapeRepository[i].length-3] = rotation.x*Math.cos(rotationAngle*Math.PI/180)+rotation.y*Math.sin(rotationAngle*Math.PI/180); // Y normal rotation
+			
+			// Z normal rotation
 			shapeRepository[i][shapeRepository[i].length-2] = rotation.x*(-1*Math.sin(rotationAngle*Math.PI/180))+rotation.y*Math.cos(rotationAngle*Math.PI/180);	// Z normal rotation			          		
 		}
 		prepareToProjection();
 			
 	}
 
+	//after rotaton calculatin drawing rhe shape according to the projection
 	function prepareToProjection(){
 		if (projectionType == 'caval')
 		{
@@ -409,7 +456,7 @@ $(document).ready(function(){
 		}		
 	}
 
-
+	//creates a vector according to projection angle
 	function getVisibleVector(){
 		switch(projectionType){
 			case 'caval':{
@@ -439,7 +486,8 @@ $(document).ready(function(){
 		}
 	}
 
-	function setMaxZ()				//sorting polygons by their maximale Z
+	//sorts the shapes by max z value
+	function setMaxZ()			
 	{
 		for (var i=0;i<shapeBoard.length-1;i++)
 		{
@@ -447,7 +495,7 @@ $(document).ready(function(){
 			{
 				if(shapeBoard[j][shapeBoard[j].length-5] < shapeBoard[j+1][shapeBoard[j].length-5])
 				{
-					if (shapeBoard[j].length == shapeBoard[j+1].length)     //if the arrays lengths are equal
+					if (shapeBoard[j].length == shapeBoard[j+1].length)  
 					{
 						for(var k=0;k<shapeBoard[j].length;k++)
 						{
@@ -483,7 +531,8 @@ $(document).ready(function(){
 		}
 	}
 
-	function scale()					//resizing function
+	//resizing shape 
+	function scale()	
 	{	
 		for(var i=0; i<shapeRepository.length;i++)
 		{			         
