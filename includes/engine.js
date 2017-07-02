@@ -316,6 +316,104 @@ $(document).ready(function(){
 		}
 	}
 
+	function Rotation3DX()		//rotation function on X
+	{			
+		console.log("Rotation3DX");
+		var rotation = {
+			y:0,
+			z:0
+		}
+		for(var i=0; i<shapeRepository.length;i++)
+		{			         
+			for(var k=0;k<shapeRepository[i].length-7;k+=3)
+		    {
+		        rotation.y = shapeRepository[i][k+1];
+		        rotation.z = shapeRepository[i][k+2];
+		        shapeRepository[i][k+1] = rotation.y*Math.cos(rotationAngle*Math.PI/180)+rotation.z*(-1*Math.sin(rotationAngle*Math.PI/180));
+				shapeRepository[i][k+2] = rotation.y*Math.sin(rotationAngle*Math.PI/180)+rotation.z*Math.cos(rotationAngle*Math.PI/180);
+		    }
+			rotation.y = shapeRepository[i][shapeRepository[i].length-2];
+			rotation.z = shapeRepository[i][shapeRepository[i].length-1];
+			shapeRepository[i][shapeRepository[i].length-2] = rotation.y*Math.cos(rotationAngle*Math.PI/180)+rotation.z*(-1*Math.sin(rotationAngle*Math.PI/180)); // Y normal rotation
+			shapeRepository[i][shapeRepository[i].length-1] = rotation.y*Math.sin(rotationAngle*Math.PI/180)+rotation.z*Math.cos(rotationAngle*Math.PI/180);	// Z normal rotation	          		
+		}
+
+		setPolygonZMax();
+		setProjection();
+									
+	}
+
+	function Rotation3DY()				//rotation on Y
+	{
+		console.log("Rotation3DY");
+		var rotation = {
+			x:0,
+			z:0
+		}
+		for(var i=0; i<shapeRepository.length;i++)
+		{			         
+			for(var k=0;k<shapeRepository[i].length-7;k+=3)
+			{
+		    	rotation.x = shapeRepository[i][k];
+		    	rotation.z = shapeRepository[i][k+2];
+		    	shapeRepository[i][k] = rotation.x*Math.cos(rotationAngle*Math.PI/180)+rotation.z*(-1*Math.sin(rotationAngle*Math.PI/180));
+				shapeRepository[i][k+2] = rotation.x*Math.sin(rotationAngle*Math.PI/180)+rotation.z*Math.cos(rotationAngle*Math.PI/180);
+		    }
+			rotation.x = shapeRepository[i][shapeRepository[i].length-3];
+			rotation.z = shapeRepository[i][shapeRepository[i].length-1];
+			shapeRepository[i][shapeRepository[i].length-3] = rotation.x*Math.cos(rotationAngle*Math.PI/180)+rotation.z*(-1*Math.sin(rotationAngle*Math.PI/180)); // X normal rotation
+			shapeRepository[i][shapeRepository[i].length-1] = rotation.x*Math.sin(rotationAngle*Math.PI/180)+rotation.z*Math.cos(rotationAngle*Math.PI/180);	// Z normal rotation		          		
+		}
+		setPolygonZMax();
+		setProjection();
+									
+	}
+
+	function Rotation3DZ()			//rotation on Z
+	{	
+		console.log("Rotate3DZ");
+		var rotation = {
+			x:0,
+			y:0
+		}
+		for(var i=0; i<shapeRepository.length;i++)
+		{			         
+			for(var k=0;k<shapeRepository[i].length-7;k+=3)
+			{
+		    	rotation.x = shapeRepository[i][k];
+		    	rotation.y = shapeRepository[i][k+1];
+		    	shapeRepository[i][k] = rotation.x*Math.cos(rotationAngle*Math.PI/180)+rotation.y*Math.sin(rotationAngle*Math.PI/180);
+				shapeRepository[i][k+1] = rotation.x*(-1*Math.sin(rotationAngle*Math.PI/180))+rotation.y*Math.cos(rotationAngle*Math.PI/180);
+		    }
+			rotation.x = shapeRepository[i][shapeRepository[i].length-3];
+			rotation.y = shapeRepository[i][shapeRepository[i].length-2];
+			shapeRepository[i][shapeRepository[i].length-3] = rotation.x*Math.cos(rotationAngle*Math.PI/180)+rotation.y*Math.sin(rotationAngle*Math.PI/180); // Y normal rotation
+			shapeRepository[i][shapeRepository[i].length-2] = rotation.x*(-1*Math.sin(rotationAngle*Math.PI/180))+rotation.y*Math.cos(rotationAngle*Math.PI/180);	// Z normal rotation			          		
+		}
+
+		setPolygonZMax();
+		setProjection();				
+	}
+
+	function setProjection(){
+				if (ProjectionCheck == 'caval')
+		{
+			Caval3D();
+		}
+		else if(ProjectionCheck == 'cabin')
+		{
+			Cabin3D();
+		}
+		else if(ProjectionCheck == 'parallel')
+		{
+			Parallel3D();
+		}
+		else
+		{		
+			perspective();
+		}	
+	}
+
 	function getVisibleVector(){
 		switch(ProjectionCheck){
 			case 'caval':{
@@ -343,152 +441,6 @@ $(document).ready(function(){
 				break;
 			}
 		}
-	}
-
-	function Rotation3DX()		//rotation function on X
-	{			
-		console.log("Rotation3DX");
-		var AngleRotXUser = 0;
-		if(rotationAngle == undefined)
-		{
-			AngleRotXUser = 5;
-		}
-		else
-		{
-			AngleRotXUser = rotationAngle;
-		}
-		var Yrot = 0;
-		var Zrot = 0;
-		for(var i=0; i<shapeRepository.length;i++)
-		{			         
-			for(var k=0;k<shapeRepository[i].length-7;k+=3)
-		    {
-		        Yrot = shapeRepository[i][k+1];
-		        Zrot = shapeRepository[i][k+2];
-		        shapeRepository[i][k+1] = Yrot*Math.cos(AngleRotXUser*Math.PI/180)+Zrot*(-1*Math.sin(AngleRotXUser*Math.PI/180));
-				shapeRepository[i][k+2] = Yrot*Math.sin(AngleRotXUser*Math.PI/180)+Zrot*Math.cos(AngleRotXUser*Math.PI/180);
-		    }
-			Yrot = shapeRepository[i][shapeRepository[i].length-2];
-			Zrot = shapeRepository[i][shapeRepository[i].length-1];
-			shapeRepository[i][shapeRepository[i].length-2] = Yrot*Math.cos(AngleRotXUser*Math.PI/180)+Zrot*(-1*Math.sin(AngleRotXUser*Math.PI/180)); // Y normal rotation
-			shapeRepository[i][shapeRepository[i].length-1] = Yrot*Math.sin(AngleRotXUser*Math.PI/180)+Zrot*Math.cos(AngleRotXUser*Math.PI/180);	// Z normal rotation	          		
-		}
-
-		setPolygonZMax();
-		if (ProjectionCheck == 'caval')
-		{
-			Caval3D();
-		}
-		else if(ProjectionCheck == 'cabin')
-		{
-			Cabin3D();
-		}
-		else if(ProjectionCheck == 'parallel')
-		{
-			Parallel3D();
-		}
-		else
-		{		
-			perspective();
-		}
-									
-	}
-
-	function Rotation3DY()				//rotation on Y
-	{
-		console.log("Rotation3DY");
-		var AngleRotXUser = 0;
-		if(rotationAngle == undefined)
-		{
-			AngleRotXUser = 5;
-		}
-		else
-		{
-			AngleRotXUser = rotationAngle;
-		}
-		var Xrot = 0;
-		var Zrot = 0;
-		for(var i=0; i<shapeRepository.length;i++)
-		{			         
-			for(var k=0;k<shapeRepository[i].length-7;k+=3)
-			{
-		    	Xrot = shapeRepository[i][k];
-		    	Zrot = shapeRepository[i][k+2];
-		    	shapeRepository[i][k] = Xrot*Math.cos(AngleRotXUser*Math.PI/180)+Zrot*(-1*Math.sin(AngleRotXUser*Math.PI/180));
-				shapeRepository[i][k+2] = Xrot*Math.sin(AngleRotXUser*Math.PI/180)+Zrot*Math.cos(AngleRotXUser*Math.PI/180);
-		    }
-			Xrot = shapeRepository[i][shapeRepository[i].length-3];
-			Zrot = shapeRepository[i][shapeRepository[i].length-1];
-			shapeRepository[i][shapeRepository[i].length-3] = Xrot*Math.cos(AngleRotXUser*Math.PI/180)+Zrot*(-1*Math.sin(AngleRotXUser*Math.PI/180)); // X normal rotation
-			shapeRepository[i][shapeRepository[i].length-1] = Xrot*Math.sin(AngleRotXUser*Math.PI/180)+Zrot*Math.cos(AngleRotXUser*Math.PI/180);	// Z normal rotation		          		
-		}
-		setPolygonZMax();
-		if (ProjectionCheck == 'caval')
-		{
-			Caval3D();
-		}
-		else if(ProjectionCheck == 'cabin')
-		{
-			Cabin3D();
-		}
-		else if(ProjectionCheck == 'parallel')
-		{
-			Parallel3D();
-		}
-		else
-		{	
-			perspective();
-		}
-									
-	}
-
-	function Rotation3DZ()			//rotation on Z
-	{	
-		console.log("Rotate3DZ");
-		var AngleRotXUser = 0;
-		if(rotationAngle == undefined)
-		{
-			AngleRotXUser = 5;
-		}
-		else
-		{
-			AngleRotXUser = rotationAngle;
-		}
-		var Xrot = 0;
-		var Yrot = 0;
-		for(var i=0; i<shapeRepository.length;i++)
-		{			         
-			for(var k=0;k<shapeRepository[i].length-7;k+=3)
-			{
-		    	Xrot = shapeRepository[i][k];
-		    	Yrot = shapeRepository[i][k+1];
-		    	shapeRepository[i][k] = Xrot*Math.cos(AngleRotXUser*Math.PI/180)+Yrot*Math.sin(AngleRotXUser*Math.PI/180);
-				shapeRepository[i][k+1] = Xrot*(-1*Math.sin(AngleRotXUser*Math.PI/180))+Yrot*Math.cos(AngleRotXUser*Math.PI/180);
-		    }
-			Xrot = shapeRepository[i][shapeRepository[i].length-3];
-			Yrot = shapeRepository[i][shapeRepository[i].length-2];
-			shapeRepository[i][shapeRepository[i].length-3] = Xrot*Math.cos(AngleRotXUser*Math.PI/180)+Yrot*Math.sin(AngleRotXUser*Math.PI/180); // Y normal rotation
-			shapeRepository[i][shapeRepository[i].length-2] = Xrot*(-1*Math.sin(AngleRotXUser*Math.PI/180))+Yrot*Math.cos(AngleRotXUser*Math.PI/180);	// Z normal rotation			          		
-		}
-
-		setPolygonZMax();
-
-		if (ProjectionCheck == 'caval')
-		{
-			Caval3D();
-		}
-		else if(ProjectionCheck == 'cabin')
-		{
-			Cabin3D();
-		}
-		else if(ProjectionCheck == 'parallel')
-		{
-			Parallel3D();
-		}
-		else
-		{		
-			perspective();
-		}								
 	}
 
 	function SortPolyZ()				//sorting polygons by their maximale Z
@@ -552,22 +504,7 @@ $(document).ready(function(){
 		}
 		normalization();
 		setPolygonZMax();
-		if (ProjectionCheck == 'caval')
-		{
-			Caval3D();
-		}
-		else if(ProjectionCheck == 'cabin')
-		{
-			Cabin3D();
-		}
-		else if(ProjectionCheck == 'parallel')
-		{
-			Parallel3D();
-		}
-		else
-		{		
-			perspective();
-		}
+		setProjection();
 
 	}	
 
@@ -586,24 +523,7 @@ $(document).ready(function(){
 		}	
 
 		normalization();
-
-		if (ProjectionCheck == 'caval')
-		{
-			Caval3D();
-		}
-		else if(ProjectionCheck == 'cabin')
-		{
-			Cabin3D();
-		}
-		else if(ProjectionCheck == 'parallel')
-		{
-			Parallel3D();
-		}
-		else
-		{		
-			perspective();
-		}
-
+		setProjection();
 	}
 
 
