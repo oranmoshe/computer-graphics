@@ -126,8 +126,8 @@ $(document).ready(function(){
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 	}
 
-	loadJson ()
-	function loadJson ()		//Get the objects from the JSON
+	load ()
+	function load ()		//Get the objects from the JSON
 	{ 
 		// initialization - read data from txt file and puts it in an array
 		readTextFile('includes/data.txt',function(data_){					 
