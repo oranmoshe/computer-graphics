@@ -7,11 +7,14 @@
 $(document).ready(function(){
 
 	var flag = "";
-	var CentreCanvasPoint = 600;         // center of canvas
-	var CanvasSizePoint = 1200;			// size of canvas
+	var centerPoint = {
+		x: 750,
+		y: 400	
+	};         // center of canvas
+	var ctxSize = 1200;			// size of canvas
 	var canvas = document.getElementById("myCanvas");
-	var contex = canvas.getContext('2d');
-	var ProjectionCheck = 'perspective';
+	var ctx = canvas.getContext('2d');
+	var projectionType = 'perspective';
 	var zoom = 0;
 	var rotationAngle=0;
 	var projectionAngle=45;
@@ -70,53 +73,49 @@ $(document).ready(function(){
 		//flag is the function the user picks
 		switch(flag){
 			case 'perspective':{
-				ProjectionCheck = 'perspective';
+				projectionType = 'perspective';
 				perspective();
 				break;	
 			}
 			case 'caval':{
-				ProjectionCheck = 'caval';
-				Caval3D();
+				projectionType = 'caval';
+				caval();
 				break;	
 			}
 			case 'cabin':{
-				ProjectionCheck = 'cabin';
-				Cabin3D();
+				projectionType = 'cabin';
+				cabin();
 				break;	
 			}
 			case 'parallel':{
-				ProjectionCheck = 'parallel';
-				Parallel3D();	
+				projectionType = 'parallel';
+				parallel();	
 				break;	
 			}
 			case 'rotateX':{
-				Rotation3DX();
+				rotateX();
 				break;	
 			}
 			case 'rotateY':{
-				Rotation3DY();
+				rotateY();
 				break;	
 			}
 			case 'rotateZ':{
-				Rotation3DZ();
+				rotateZ();
 				break;	
 			}
 			case 'zoomIn':{
 				zoom = 1.1;
-				Resize3D()	
+				scale()	
 				break;	
 			}
 			case 'zoomOut':{
 				zoom = 0.9;
-				Resize3D()	
+				scale()	
 				break;	
 			}
 			case 'reload':{
-				projectionAngle = 45;
-				opacity = 1;
-				initCenter = 600;
-				zoom = 1.2;
-				loadJson();
+				window.location.reload();
 				break;	
 			}	
 		}
@@ -125,14 +124,14 @@ $(document).ready(function(){
 
 	//clears canvas
 	function clear(){
-		contex.clearRect(0, 0, canvas.width, canvas.height);
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
 	}
 
 
 	loadJson ()
 	function loadJson ()		//Get the objects from the JSON
 	{ 				
-		$.getJSON('http://localhost/graphics/Ex3/computer-graphics/includes/PolygonsList.json', function(data) 
+		$.getJSON('http://localhost/graphics/Ex3/computer-graphics/includes/shapes.json', function(data) 
 		{
 			if(data.shapes !== undefined)
 			{
@@ -142,10 +141,6 @@ $(document).ready(function(){
 					for(var k=0; k<data.shapes[i].length; k++)
 					{
 						shapeRepository[i][k]= data.shapes[i][k];
-					}
-					for(j=0;j<5;j++)
-					{
-						shapeRepository[i][shapeRepository[i].length]=0;
 					}
 				}
 			}		    
@@ -165,18 +160,18 @@ $(document).ready(function(){
 			if(shapeBoard[i][shapeBoard[i].length-4] == 1)		//if visibilty=1 -> draw polygon to screen
 			{
 				var k = 3;
-				contex.beginPath();   //first point of polygon
-				contex.moveTo(shapeBoard[i][0]+CentreCanvasPoint, shapeBoard[i][1]+CentreCanvasPoint);
+				ctx.beginPath();   //first point of polygon
+				ctx.moveTo(shapeBoard[i][0]+centerPoint.x, shapeBoard[i][1]+centerPoint.y);
 				while(k<shapeBoard[i].length-7)
 				{
-					contex.lineTo(shapeBoard[i][k]+CentreCanvasPoint, shapeBoard[i][k+1]+CentreCanvasPoint);  //connect polygon points 
+					ctx.lineTo(shapeBoard[i][k]+centerPoint.x, shapeBoard[i][k+1]+centerPoint.y);  //connect polygon points 
 					k = k+3;
 				}									
-				contex.closePath();    //close the polygon path
-				contex.globalAlpha = 1;
-				contex.stroke();
-				contex.fillStyle = shapeBoard[i][shapeBoard[i].length-6];
-				contex.fill();		
+				ctx.closePath();    //close the polygon path
+				ctx.globalAlpha = 1;
+				ctx.stroke();
+				ctx.fillStyle = shapeBoard[i][shapeBoard[i].length-6];
+				ctx.fill();		
 			}
 			i++;	
 		}
@@ -184,12 +179,12 @@ $(document).ready(function(){
 	}
 
 
-	function Caval3D()			//cavalier projection function
+	function caval()			//cavalier projection function
 	{		
 		projection('caval')
 	}
 
-	function Cabin3D()		//cabinet projection function
+	function cabin()		//cabinet projection function
 	{		
 		projection('cabin')						
 	}
@@ -204,13 +199,12 @@ $(document).ready(function(){
 			}
 		}
 		setPolygonZMax();			//which maximale Z the polygon owns
-		SortPolyZ();		//Sort polygons through their maximale Z
+		setMaxZ();		//Sort polygons through their maximale Z
 		draw();			//Draw on screen
 	}
 
 	function perspective()		//perspective projection function
 	{			
-		console.log("perspective");
 		clear();
 		cloneRepository();
 		for (var i = 0; i < shapeBoard.length; i++) {		//go through all polygons and calculate the coordinates
@@ -221,13 +215,12 @@ $(document).ready(function(){
 		
 		}
 		setPolygonZMax();					//which maximale Z the polygon owns
-		SortPolyZ();				//Sort polygons through their maximale Z
+		setMaxZ();				//Sort polygons through their maximale Z
 		draw();					//Draw on screen
 	}
 
-	function Parallel3D()		//parallel projection
+	function parallel()		//parallel projection
 	{		
-		console.log("Parallel3D");
 		clear();
 		cloneRepository();
 		for (var i = 0; i < shapeBoard.length; i++) {		//go through all polygons and calculate the coordinates
@@ -237,7 +230,7 @@ $(document).ready(function(){
 			}
 		}
 		setPolygonZMax();
-		SortPolyZ();
+		setMaxZ();
 		draw();
 	}
 
@@ -293,7 +286,6 @@ $(document).ready(function(){
 
 	function visible()		//visiability of polygons
 	{		
-		console.log("visible");
 		var vector = getVisibleVector();
 		for(var i=0; i<shapeBoard.length;i++)				//check the angle between C.O.P & Polygon Normal
 		{		
@@ -316,9 +308,8 @@ $(document).ready(function(){
 		}
 	}
 
-	function Rotation3DX()		//rotation function on X
+	function rotateX()		//rotation function on X
 	{			
-		console.log("Rotation3DX");
 		var rotation = {
 			y:0,
 			z:0
@@ -343,9 +334,8 @@ $(document).ready(function(){
 									
 	}
 
-	function Rotation3DY()				//rotation on Y
+	function rotateY()				//rotation on Y
 	{
-		console.log("Rotation3DY");
 		var rotation = {
 			x:0,
 			z:0
@@ -366,12 +356,11 @@ $(document).ready(function(){
 		}
 		setPolygonZMax();
 		setProjection();
-									
+		console.log(shapeRepository);				
 	}
 
-	function Rotation3DZ()			//rotation on Z
+	function rotateZ()			//rotation on Z
 	{	
-		console.log("Rotate3DZ");
 		var rotation = {
 			x:0,
 			y:0
@@ -396,17 +385,17 @@ $(document).ready(function(){
 	}
 
 	function setProjection(){
-				if (ProjectionCheck == 'caval')
+				if (projectionType == 'caval')
 		{
-			Caval3D();
+			caval();
 		}
-		else if(ProjectionCheck == 'cabin')
+		else if(projectionType == 'cabin')
 		{
-			Cabin3D();
+			cabin();
 		}
-		else if(ProjectionCheck == 'parallel')
+		else if(projectionType == 'parallel')
 		{
-			Parallel3D();
+			parallel();
 		}
 		else
 		{		
@@ -415,7 +404,7 @@ $(document).ready(function(){
 	}
 
 	function getVisibleVector(){
-		switch(ProjectionCheck){
+		switch(projectionType){
 			case 'caval':{
 				return {
 					x:5000*getCos(projectionAngle),
@@ -443,9 +432,9 @@ $(document).ready(function(){
 		}
 	}
 
-	function SortPolyZ()				//sorting polygons by their maximale Z
+	function setMaxZ()				//sorting polygons by their maximale Z
 	{
-		console.log("SortPolyZ");
+		console.log("setMaxZ");
 		for (var i=0;i<shapeBoard.length-1;i++)
 		{
 			for (var j=0;j<shapeBoard.length-i-1;j++)
@@ -489,10 +478,8 @@ $(document).ready(function(){
 		}
 	}
 
-
-	function Resize3D()					//resizing function
+	function scale()					//resizing function
 	{	
-		console.log("Resize3D");
 		for(var i=0; i<shapeRepository.length;i++)
 		{			         
 		   	for(var k=0;k<shapeRepository[i].length-7;k+=3)
@@ -505,26 +492,6 @@ $(document).ready(function(){
 		normalization();
 		setPolygonZMax();
 		setProjection();
-
 	}	
-
-
-	function Move3D()				//moving objects on the grid
-	{
-		console.log("Move3D");
-		for(var i=0; i<shapeRepository.length;i++)
-		{			     
-			for(var k=0;k<shapeRepository[i].length-7;k+=3)
-			{
-				shapeRepository[i][k] = shapeRepository[i][k]+parseFloat(0);
-				shapeRepository[i][k+1] = shapeRepository[i][k+1]+parseFloat(0);
-				shapeRepository[i][k+2] = shapeRepository[i][k+2]+parseFloat(0);
-			}
-		}	
-
-		normalization();
-		setProjection();
-	}
-
 
 });
