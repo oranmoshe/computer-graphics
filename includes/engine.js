@@ -6,21 +6,27 @@
 
 $(document).ready(function(){
 
+	// flag represents the action the user play
 	var flag = "";
+	// canvas settings
 	var centerPoint = {
 		x: 750,
 		y: 400	
 	}; 
-	var ctxSize = 1200;			// size of canvas
+	var ctxSize = 1200;	
 	var canvas = document.getElementById("myCanvas");
 	var ctx = canvas.getContext('2d');
+	// flag of current projectin 
 	var projectionType = 'perspective';
+	// zoom level
 	var zoom = 0;
+	// angles of rotation and projection
 	var rotationAngle=0;
 	var projectionAngle=45;
-	var shapeRepository = [];
-	var shapeBoard = [];
-	var orderingArray = [];
+	// data storage
+	var shapeRepository = []; // data from source file
+	var shapeBoard = []; // holds data temporary for user manipulations
+	var orderingArray = []; // holds data temporary for sorting polygons
 
 	// Make toolbox draggable
 	$( "ul" ).draggable();
