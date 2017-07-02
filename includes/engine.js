@@ -127,29 +127,52 @@ $(document).ready(function(){
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 	}
 
-
 	loadJson ()
 	function loadJson ()		//Get the objects from the JSON
-	{ 				
-		$.getJSON('http://localhost/graphics/Ex3/computer-graphics/includes/shapes.json', function(data) 
-		{
-			if(data.shapes !== undefined)
-			{
-				for(var i=0; i<data.shapes.length; i++)											
-				{	
-					shapeRepository[i] = [];
-					for(var k=0; k<data.shapes[i].length; k++)
-					{
-						shapeRepository[i][k]= data.shapes[i][k];
-					}
+	{ 
+		// initialization - read data from txt file and puts it in an array
+		readTextFile('includes/data.txt',function(data_){					 
+		    var lines = data_.split('\n');
+			for(var i=0; i<lines.length; i++)											
+			{	
+				shapeRepository[i] = [];
+				for(var k=0; k<lines[i].split(',').length; k++)
+				{
+					shapeRepository[i][k]= lines[i].split(',')[k];
 				}
-			}		    
-			normalization();
-			setPolygonZMax();
-			perspective();																		
+			}
+					    		
+	 		normalization();
+	 		setPolygonZMax();
+	 		perspective();	
 		});
 	}
 
+
+	//reads txt file
+	function readTextFile(file,callback)
+	{
+
+	    httpRequest = new XMLHttpRequest();
+
+	    if (!httpRequest) {
+	      alert('Giving up :( Cannot create an XMLHTTP instance');
+	      return false;
+	    }
+	    httpRequest.onreadystatechange = alertContents;
+	    httpRequest.open('GET', file);
+	    httpRequest.send();
+		  
+		  function alertContents() {
+		    if (httpRequest.readyState === XMLHttpRequest.DONE) {
+		      if (httpRequest.status === 200) {
+		        callback(httpRequest.responseText);
+		      } else {
+		        callback('There was a problem with the request.');
+		      }
+		    }
+		  }
+	}
 
 	function draw()			//Drawing the objects on the screen
 	{									
@@ -161,10 +184,10 @@ $(document).ready(function(){
 			{
 				var k = 3;
 				ctx.beginPath();   //first point of polygon
-				ctx.moveTo(shapeBoard[i][0]+centerPoint.x, shapeBoard[i][1]+centerPoint.y);
+				ctx.moveTo(parseFloat(shapeBoard[i][0])+parseFloat(centerPoint.x), parseFloat(shapeBoard[i][1])+parseFloat(centerPoint.y));
 				while(k<shapeBoard[i].length-7)
 				{
-					ctx.lineTo(shapeBoard[i][k]+centerPoint.x, shapeBoard[i][k+1]+centerPoint.y);  //connect polygon points 
+					ctx.lineTo(parseFloat(shapeBoard[i][k])+parseFloat(centerPoint.x), parseFloat(shapeBoard[i][k+1])+parseFloat(centerPoint.y));  //connect polygon points 
 					k = k+3;
 				}									
 				ctx.closePath();    //close the polygon path
@@ -178,7 +201,6 @@ $(document).ready(function(){
 							
 	}
 
-
 	function caval()			//cavalier projection function
 	{		
 		projection('caval')
@@ -190,51 +212,46 @@ $(document).ready(function(){
 	}
 
 	function projection(type){
-		clear();
-		cloneRepository();
-		for (var i = 0; i < shapeBoard.length; i++) {
-			for (var k = 0; k<shapeBoard[i].length-7; k = k+3) {
-				shapeBoard[i][k] = (shapeBoard[i][k])+(shapeBoard[i][k+2]/(type=='cabin'?2:1)*getCos(projectionAngle));
-				shapeBoard[i][k+1] = (shapeBoard[i][k+1])+(shapeBoard[i][k+2]/2*getSin(projectionAngle));
+		prepareToDraw(function(){
+			for (var i = 0; i < shapeBoard.length; i++) {
+				for (var k = 0; k<shapeBoard[i].length-7; k = k+3) {
+					shapeBoard[i][k] = parseFloat((shapeBoard[i][k]))+parseFloat((shapeBoard[i][k+2]/(type=='cabin'?2:1)*getCos(projectionAngle)));
+					shapeBoard[i][k+1] = parseFloat((shapeBoard[i][k+1]))+parseFloat((shapeBoard[i][k+2]/2*getSin(projectionAngle)));
+				}
 			}
-		}
-		setPolygonZMax();			//which maximale Z the polygon owns
-		setMaxZ();		//Sort polygons through their maximale Z
-		draw();			//Draw on screen
+		});
 	}
 
 	function perspective()		//perspective projection function
 	{			
-		clear();
-		cloneRepository();
-		for (var i = 0; i < shapeBoard.length; i++) {		//go through all polygons and calculate the coordinates
-			for (var k = 0; k<shapeBoard[i].length-7; k = k+3) {
-				shapeBoard[i][k] = (shapeBoard[i][k])/(1+shapeBoard[i][k+2]/600);
-				shapeBoard[i][k+1] = (shapeBoard[i][k+1])/(1+shapeBoard[i][k+2]/600);	
-			}
-		
-		}
-		setPolygonZMax();					//which maximale Z the polygon owns
-		setMaxZ();				//Sort polygons through their maximale Z
-		draw();					//Draw on screen
+		prepareToDraw(function(){	
+			for (var i = 0; i < shapeBoard.length; i++) {		//go through all polygons and calculate the coordinates
+				for (var k = 0; k<shapeBoard[i].length-7; k = k+3) {
+					shapeBoard[i][k] = (shapeBoard[i][k])/(1+shapeBoard[i][k+2]/600);
+					shapeBoard[i][k+1] = (shapeBoard[i][k+1])/(1+shapeBoard[i][k+2]/600);	
+				}
+			
+			}	
+		});
 	}
 
 	function parallel()		//parallel projection
 	{		
+		prepareToDraw(function(){		
+		});
+	}
+
+	function prepareToDraw(callback){
 		clear();
 		cloneRepository();
-		for (var i = 0; i < shapeBoard.length; i++) {		//go through all polygons and calculate the coordinates
-			for (var k = 0; k<shapeBoard[i].length-7; k = k+3) {
-				shapeBoard[i][k] = shapeBoard[i][k];
-				shapeBoard[i][k+1] = shapeBoard[i][k+1];
-			}
-		}
+		callback();
 		setPolygonZMax();
 		setMaxZ();
 		draw();
 	}
 
 	function cloneRepository(){
+		shapeBoard = [];
 		for(var i=0; i<shapeRepository.length; i++)			//copy from json array to temp array									
 		{	
 			shapeBoard[i] = [];
@@ -252,7 +269,6 @@ $(document).ready(function(){
 	}
 	function setPolygonZMax()			//which maximale Z the polygon owns
 	{			
-		console.log("setPolygonZMax");
 		for(var i=0; i<shapeRepository.length;i++)	
 		{			          	
 			shapeRepository[i][shapeRepository[i].length-5] = -10000;	 // ZMax refreshing
@@ -268,7 +284,6 @@ $(document).ready(function(){
 
 	function normalization()		//calculate the normal from each polygon
 	{			
-		console.log("normalization");
 		for(var i=0; i<shapeRepository.length;i++)
 		{			         
 			var vector1 = [];
@@ -295,9 +310,9 @@ $(document).ready(function(){
 				z:shapeBoard[i][shapeBoard[i].length-1]
 			}
 			var newVector = {
-				x:shapeBoard[i][0]-(vector.x),
-				y:shapeBoard[i][1]-(vector.y),
-				z:shapeBoard[i][2]-(-vector.z)
+				x:parseFloat(shapeBoard[i][0])-parseFloat((vector.x)),
+				y:parseFloat(shapeBoard[i][1])-parseFloat((vector.y)),
+				z:parseFloat(shapeBoard[i][2])-parseFloat((-vector.z))
 			}
 			var arcos = Math.acos((newVector.x*normal.x+newVector.y*normal.y+newVector.z*normal.z)/(Math.sqrt(Math.pow(newVector.x,2)+Math.pow(newVector.y,2)+Math.pow(newVector.z,2))*Math.sqrt(Math.pow(normal.x,2)+Math.pow(normal.y,2)+Math.pow(normal.z,2)))); // calc angle between normal and C.O.P
 			var deg = arcos*(180/Math.PI); // from rad to deg  
@@ -328,10 +343,7 @@ $(document).ready(function(){
 			shapeRepository[i][shapeRepository[i].length-2] = rotation.y*Math.cos(rotationAngle*Math.PI/180)+rotation.z*(-1*Math.sin(rotationAngle*Math.PI/180)); // Y normal rotation
 			shapeRepository[i][shapeRepository[i].length-1] = rotation.y*Math.sin(rotationAngle*Math.PI/180)+rotation.z*Math.cos(rotationAngle*Math.PI/180);	// Z normal rotation	          		
 		}
-
-		setPolygonZMax();
-		setProjection();
-									
+		prepareToProjection();							
 	}
 
 	function rotateY()				//rotation on Y
@@ -354,9 +366,7 @@ $(document).ready(function(){
 			shapeRepository[i][shapeRepository[i].length-3] = rotation.x*Math.cos(rotationAngle*Math.PI/180)+rotation.z*(-1*Math.sin(rotationAngle*Math.PI/180)); // X normal rotation
 			shapeRepository[i][shapeRepository[i].length-1] = rotation.x*Math.sin(rotationAngle*Math.PI/180)+rotation.z*Math.cos(rotationAngle*Math.PI/180);	// Z normal rotation		          		
 		}
-		setPolygonZMax();
-		setProjection();
-		console.log(shapeRepository);				
+		prepareToProjection();
 	}
 
 	function rotateZ()			//rotation on Z
@@ -379,9 +389,13 @@ $(document).ready(function(){
 			shapeRepository[i][shapeRepository[i].length-3] = rotation.x*Math.cos(rotationAngle*Math.PI/180)+rotation.y*Math.sin(rotationAngle*Math.PI/180); // Y normal rotation
 			shapeRepository[i][shapeRepository[i].length-2] = rotation.x*(-1*Math.sin(rotationAngle*Math.PI/180))+rotation.y*Math.cos(rotationAngle*Math.PI/180);	// Z normal rotation			          		
 		}
+		prepareToProjection();
+			
+	}
 
+	function prepareToProjection(){
 		setPolygonZMax();
-		setProjection();				
+		setProjection();		
 	}
 
 	function setProjection(){
@@ -407,17 +421,17 @@ $(document).ready(function(){
 		switch(projectionType){
 			case 'caval':{
 				return {
-					x:5000*getCos(projectionAngle),
-					y:5000*getSin(projectionAngle),
-					z:5000
+					x:4444*getCos(projectionAngle),
+					y:4444*getSin(projectionAngle),
+					z:4444
 				}
 				break;
 			}
 			case 'cabin':{
 				return {
-					x:5000/2*getCos(projectionAngle),
-					y:5000/2*getSin(projectionAngle),
-					z:5000
+					x:4444/2*getCos(projectionAngle),
+					y:4444/2*getSin(projectionAngle),
+					z:4444
 				}
 				break;
 			}
@@ -425,7 +439,7 @@ $(document).ready(function(){
 				return {
 					x:0,
 					y:0,
-					z:800
+					z:777
 				}	
 				break;
 			}
@@ -434,7 +448,6 @@ $(document).ready(function(){
 
 	function setMaxZ()				//sorting polygons by their maximale Z
 	{
-		console.log("setMaxZ");
 		for (var i=0;i<shapeBoard.length-1;i++)
 		{
 			for (var j=0;j<shapeBoard.length-i-1;j++)
@@ -452,8 +465,7 @@ $(document).ready(function(){
 					}
 					else
 					{
-						var temp1 = [];
-						var temp2 = [];					
+						var temp1=[],temp2=[];					
 						for(var s=0;s<shapeBoard[j].length;s++)
 						{
 							temp1[s] = shapeBoard[j][s];
@@ -490,8 +502,7 @@ $(document).ready(function(){
 			}
 		}
 		normalization();
-		setPolygonZMax();
-		setProjection();
+		prepareToProjection();
 	}	
 
 });
