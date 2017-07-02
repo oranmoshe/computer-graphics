@@ -158,7 +158,7 @@ $(document).ready(function(){
 
 	function draw()			//Drawing the objects on the screen
 	{									
-		VisibPoly();													//the function checks which polygon to be displayed
+		visible();													//the function checks which polygon to be displayed
 		var i = 0;
 		while(i<shapeBoard.length)								//going through all polygons
 		{
@@ -291,75 +291,59 @@ $(document).ready(function(){
 		}
 	}
 
-	function VisibPoly()		//visiability of polygons
+	function visible()		//visiability of polygons
 	{		
-		console.log("VisibPoly");
-		var NormX = 0;
-		var NormY = 0;
-		var NormZ = 0;
-		var VectX = 0;
-		var VectY = 0;
-		var VectZ = 0;	
-		var VisPol = 0;
-		var AngleNormUser = 0;
-
-	/////////////////////////caval or cabinet projection///////////
-		var Angle;
-		if(projectionAngle == undefined)
-		{
-			Angle = 45;
-		}
-		else
-		{
-			Angle = projectionAngle;
-		}
-		var ProjAngleX = Math.cos(-Angle*Math.PI/180);
-		var ProjAngleY = Math.sin(-Angle*Math.PI/180);
-		var xtovec = 0;
-		var ytovec = 0;
-		var ztovec = 0;
-		var vector = {};
-		if (ProjectionCheck == 'caval')    // cavalier projection
-		{
-
-			xtovec = 0+(5000*ProjAngleX);
-			ytovec = 0+(5000*ProjAngleY);
-			ztovec = 5000;
-		}
-		else if(ProjectionCheck == 'cabin')		// cabinet projection
-		{
-			xtovec = 0+(5000/2*ProjAngleX);
-			ytovec = 0+(5000/2*ProjAngleY);
-			ztovec = 5000;
-		}
-		else					//not caval & not cabinet
-		{		
-			xtovec = 0;
-			ytovec = 0;
-			ztovec = 800;
-		}
-
+		console.log("visible");
+		var vector = getVisibleVector();
 		for(var i=0; i<shapeBoard.length;i++)				//check the angle between C.O.P & Polygon Normal
-		{			      
-			NormX = shapeBoard[i][shapeBoard[i].length-3];
-			NormY = shapeBoard[i][shapeBoard[i].length-2];
-			NormZ = shapeBoard[i][shapeBoard[i].length-1];
-			VectX = shapeBoard[i][0]-(xtovec);
-			VectY = shapeBoard[i][1]-(ytovec);
-			VectZ = shapeBoard[i][2]-(-ztovec);
-
-			VisPol = Math.acos((VectX*NormX+VectY*NormY+VectZ*NormZ)/(Math.sqrt(Math.pow(VectX,2)+Math.pow(VectY,2)+Math.pow(VectZ,2))*Math.sqrt(Math.pow(NormX,2)+Math.pow(NormY,2)+Math.pow(NormZ,2)))); // calc angle between normal and C.O.P
-			AngleNormUser = VisPol*(180/Math.PI); // from rad to deg
-				  
-			if(Math.cos(AngleNormUser*(Math.PI/180))<0)  
-			{
-				shapeBoard[i][shapeBoard[i].length-4] = 1;
+		{		
+			var normal = {
+				x:shapeBoard[i][shapeBoard[i].length-3],
+				y:shapeBoard[i][shapeBoard[i].length-2],
+				z:shapeBoard[i][shapeBoard[i].length-1]
 			}
-			else{shapeBoard[i][shapeBoard[i].length-4] = 0;}
-
+			var newVector = {
+				x:shapeBoard[i][0]-(vector.x),
+				y:shapeBoard[i][1]-(vector.y),
+				z:shapeBoard[i][2]-(-vector.z)
+			}
+			var arcos = Math.acos((newVector.x*normal.x+newVector.y*normal.y+newVector.z*normal.z)/(Math.sqrt(Math.pow(newVector.x,2)+Math.pow(newVector.y,2)+Math.pow(newVector.z,2))*Math.sqrt(Math.pow(normal.x,2)+Math.pow(normal.y,2)+Math.pow(normal.z,2)))); // calc angle between normal and C.O.P
+			var deg = arcos*(180/Math.PI); // from rad to deg  
+			if(Math.cos(deg*(Math.PI/180))<0)  
+				shapeBoard[i][shapeBoard[i].length-4] = 1;
+			else
+				shapeBoard[i][shapeBoard[i].length-4] = 0;
 		}
 	}
 
+	function getVisibleVector(){
+		switch(ProjectionCheck){
+			case 'caval':{
+				return {
+					x:5000*getCos(projectionAngle),
+					y:5000*getSin(projectionAngle),
+					z:5000
+				}
+				break;
+			}
+			case 'cabin':{
+				return {
+					x:5000/2*getCos(projectionAngle),
+					y:5000/2*getSin(projectionAngle),
+					z:5000
+				}
+				break;
+			}
+			default:{
+				return {
+					x:0,
+					y:0,
+					z:800
+				}	
+				break;
+			}
+		}
+	}
 
 	function Rotation3DX()		//rotation function on X
 	{			
