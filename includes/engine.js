@@ -140,8 +140,7 @@ $(document).ready(function(){
 				{
 					shapeRepository[i][k]= lines[i].split(',')[k];
 				}
-			}
-					    		
+			}	    		
 	 		normalization();
 	 		setPolygonZMax();
 	 		perspective();	
@@ -245,7 +244,7 @@ $(document).ready(function(){
 		clear();
 		cloneRepository();
 		callback();
-		setPolygonZMax();
+		setPolygonZMax(); 
 		setMaxZ();
 		draw();
 	}
@@ -395,11 +394,7 @@ $(document).ready(function(){
 
 	function prepareToProjection(){
 		setPolygonZMax();
-		setProjection();		
-	}
-
-	function setProjection(){
-				if (projectionType == 'caval')
+		if (projectionType == 'caval')
 		{
 			caval();
 		}
@@ -414,8 +409,9 @@ $(document).ready(function(){
 		else
 		{		
 			perspective();
-		}	
+		}		
 	}
+
 
 	function getVisibleVector(){
 		switch(projectionType){
