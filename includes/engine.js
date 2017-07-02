@@ -36,7 +36,7 @@ $(document).ready(function(){
 			$('#title').css('font-weight','bold');	
 			switch(type){
 				case 'type':{
-					$('article').text("Please click on one point to determine the size of the picture");
+					$('article').text("Please insert a value then click at the screen");
 					inputValue = null;
 					while(!inputValue){
 						var val = prompt('value:');
@@ -49,7 +49,7 @@ $(document).ready(function(){
 					break;
 				}
 				case 'angle':{
-					$('article').text("Please click on one point to determine the size of the picture");
+					$('article').text("Please insert a value then click at the screen");
 					inputValue = null;
 					while(!inputValue){
 						var val = prompt('value:');
